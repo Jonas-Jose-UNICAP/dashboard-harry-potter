@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observatório Mágico | Dashboard Analítico Harry Potter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body data-theme="padrao">
+  <header class="topbar">
+    <div class="container topbar-content">
+      <div class="brand">
+        <span class="brand-badge">⚡</span>
+        <div>
+          <h1>Observatório de Hogwarts</h1>
+          <p>Análise Financeira, Crítica e Censo Bruxo em Tempo Real</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="theme-selector">
+          <label for="selectTema">Tema da Casa:</label>
+          <select id="selectTema">
+            <option value="padrao">Hogwarts (Padrão)</option>
+            <option value="grifinoria">Grifinória</option>
+            <option value="sonserina">Sonserina</option>
+            <option value="corvinal">Corvinal</option>
+            <option value="lufalufa">Lufa-Lufa</option>
+          </select>
+        </div>
+        <button id="btnExportarCSV" class="btn btn-secondary">Exportar CSV</button>
+        <button id="btnConfigBack4App" class="btn btn-outline">Configurar Back4App</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="modalBack4App" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Conexão REST API - Back4App</h2>
+        <button id="btnFecharModal" class="btn-close">&times;</button>
+      </div>
+      <p class="modal-desc">Insira as credenciais do seu aplicativo no Back4App para sincronizar o CRUD na nuvem. Se deixado em branco, o modo de demonstração local será utilizado.</p>
+      <form id="formConfigBack4App">
+        <div class="form-group">
+          <label for="inputAppId">Application ID (X-Parse-Application-Id)</label>
+          <input type="text" id="inputAppId" placeholder="Ex: xYz123AbC456...">
+        </div>
+        <div class="form-group">
+          <label for="inputRestKey">REST API Key (X-Parse-REST-API-Key)</label>
+          <input type="text" id="inputRestKey" placeholder="Ex: kLm789NoP012...">
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnLimparChaves" class="btn btn-danger">Usar Modo Local</button>
+          <button type="submit" class="btn btn-primary">Salvar e Conectar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <main class="container main-content">
+    <section class="filter-bar card">
+      <div class="filter-group">
+        <label for="inputBuscaFilme">Buscar Filme</label>
+        <input type="text" id="inputBuscaFilme" placeholder="Ex: Azkaban, Cálice...">
+      </div>
+      <div class="filter-group">
+        <label for="filtroDiretor">Diretor</label>
+        <select id="filtroDiretor">
+          <option value="todos">Todos os Diretores</option>
+          <option value="Chris Columbus">Chris Columbus</option>
+          <option value="Alfonso Cuarón">Alfonso Cuarón</option>
+          <option value="Mike Newell">Mike Newell</option>
+          <option value="David Yates">David Yates</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filtroFase">Período / Fase</label>
+        <select id="filtroFase">
+          <option value="todas">Todas as Fases (2001-2011)</option>
+          <option value="Fase Inicial (2001-2004)">Fase Inicial (2001-2004)</option>
+          <option value="Fase Sombria (2005-2011)">Fase Sombria (2005-2011)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="ordemDados">Ordenar Gráficos Por</label>
+        <select id="ordemDados">
+          <option value="ano">Ordem Cronológica (Ano)</option>
+          <option value="bilheteria">Maior Bilheteria Mundial</option>
+          <option value="roi">Maior Retorno (ROI %)</option>
+          <option value="imdb">Maior Nota IMDb</option>
+        </select>
+      </div>
+      <div class="filter-group filter-reset">
+        <button id="btnResetFiltros" class="btn btn-outline">Limpar Filtros</button>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card card">
+        <span class="kpi-label">Bilheteria Total (Filtro)</span>
+        <strong id="kpiBilheteria" class="kpi-value">US$ 0 M</strong>
+        <span id="kpiFilmesCount" class="kpi-sub">8 filmes analisados</span>
+      </article>
+      <article class="kpi-card card">
+        <span class="kpi-label">Orçamento Total Investido</span>
+        <strong id="kpiOrcamento" class="kpi-value">US$ 0 M</strong>
+        <span id="kpiLucroLiquido" class="kpi-sub">Lucro Bruto: US$ 0 M</span>
+      </article>
+      <article class="kpi-card card">
+        <span class="kpi-label">Retorno Médio (ROI)</span>
+        <strong id="kpiROI" class="kpi-value">0%</strong>
+        <span class="kpi-sub">Relação Bilheteria / Orçamento</span>
+      </article>
+      <article class="kpi-card card">
+        <span class="kpi-label">Média Crítica & Público</span>
+        <strong id="kpiNotas" class="kpi-value">0.0 / 10</strong>
+        <span id="kpiRotten" class="kpi-sub">Rotten Tomatoes: 0%</span>
+      </article>
+    </section>
+
+    <section class="charts-grid">
+      <div class="chart-card card chart-wide">
+        <div class="chart-header">
+          <h2>Desempenho Financeiro vs. Metas do Estúdio (US$ Milhões)</h2>
+          <span class="badge">Gráfico de Barras + Integração CRUD</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="graficoFinanceiro"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card card">
+        <div class="chart-header">
+          <h2>Evolução de Aprovação: Crítica vs. Público (%)</h2>
+          <span class="badge">Gráfico de Linha</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="graficoAvaliacoes"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card card">
+        <div class="chart-header">
+          <h2>Participação na Bilheteria por Diretor (US$ Milhões)</h2>
+          <span class="badge">Gráfico de Rosca</span>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="graficoDiretores"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="crud-section card">
+      <div class="section-header">
+        <div>
+          <h2>Planejamento de Metas e Anotações Analíticas (CRUD Back4App)</h2>
+          <p>Cadastre metas de arrecadação para qualquer filme. Os valores salvos atualizam automaticamente a barra de "Meta Estipulada" no primeiro gráfico.</p>
+        </div>
+        <span id="statusBack4App" class="status-pill status-local">Modo Local Ativo</span>
+      </div>
+
+      <div class="crud-layout">
+        <form id="formCrudMeta" class="crud-form">
+          <input type="hidden" id="metaObjectId">
+          <div class="form-group">
+            <label for="metaFilmeId">Filme da Franquia</label>
+            <select id="metaFilmeId" required></select>
+          </div>
+          <div class="form-group">
+            <label for="metaValor">Meta de Bilheteria (US$ Milhões)</label>
+            <input type="number" id="metaValor" step="10" min="100" max="2500" placeholder="Ex: 1000" required>
+          </div>
+          <div class="form-group">
+            <label for="metaResponsavel">Analista / Responsável</label>
+            <input type="text" id="metaResponsavel" placeholder="Ex: Minerva McGonagall" required>
+          </div>
+          <div class="form-group">
+            <label for="metaObservacao">Análise sobre o Indicador</label>
+            <textarea id="metaObservacao" rows="3" placeholder="Ex: Forte desempenho internacional no lançamento de verão..." required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="btnSalvarMeta" class="btn btn-primary">Cadastrar Meta</button>
+            <button type="button" id="btnCancelarEdicao" class="btn btn-outline hidden">Cancelar Edição</button>
+          </div>
+        </form>
+
+        <div class="crud-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Filme</th>
+                <th>Bilheteria Real</th>
+                <th>Meta (CRUD)</th>
+                <th>Status no Gráfico</th>
+                <th>Analista</th>
+                <th>Análise do Indicador</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaMetasBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="api-section card">
+      <div class="section-header">
+        <div>
+          <h2>Censo Oficial do Mundo Bruxo (API Pública: HP-API)</h2>
+          <p>Dados consumidos em tempo real da API pública <code>hp-api.onrender.com</code>, distribuindo personagens por casa e catalogando bruxos e feitiços.</p>
+        </div>
+        <span id="statusApiPublica" class="status-pill">Conectando à API...</span>
+      </div>
+
+      <div class="api-dashboard-grid">
+        <div class="chart-card api-chart-box">
+          <div class="chart-header">
+            <h3>Personagens Catalogados por Casa de Hogwarts (Unidades)</h3>
+          </div>
+          <div class="chart-wrapper-small">
+            <canvas id="graficoCasasAPI"></canvas>
+          </div>
+          <div class="spells-counter-box">
+            <span>Total de Feitiços Oficiais na API:</span>
+            <strong id="contadorFeiticos">Carregando...</strong>
+          </div>
+        </div>
+
+        <div class="api-explorer">
+          <div class="api-filters">
+            <input type="text" id="inputBuscaPersonagem" placeholder="Buscar bruxo, ator ou patrono...">
+            <select id="filtroCasaAPI">
+              <option value="todas">Todas as Casas</option>
+              <option value="Gryffindor">Grifinória (Gryffindor)</option>
+              <option value="Slytherin">Sonserina (Slytherin)</option>
+              <option value="Ravenclaw">Corvinal (Ravenclaw)</option>
+              <option value="Hufflepuff">Lufa-Lufa (Hufflepuff)</option>
+            </select>
+          </div>
+          <div id="gridPersonagens" class="characters-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Dashboard Analítico Harry Potter &bull; Desenvolvido com Chart.js, REST API (Back4App) e HP-API Pública</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
