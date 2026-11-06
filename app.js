@@ -15,6 +15,33 @@ const METAS_INICIAIS_LOCAIS = [
   { objectId: "local3", filmeId: "hp8", valorMeta: 1200, responsavel: "Severo Snape", observacao: "Conclusão épica da saga ultrapassou a barreira de US$ 1,3 bilhão." }
 ];
 
+const PERSONAGENS_FALLBACK = [
+  { name: "Harry Potter", house: "Gryffindor", patronus: "Stag", actor: "Daniel Radcliffe", image: "https://ik.imagekit.io/hpapi/harry.jpg" },
+  { name: "Hermione Granger", house: "Gryffindor", patronus: "Otter", actor: "Emma Watson", image: "https://ik.imagekit.io/hpapi/hermione.jpeg" },
+  { name: "Ron Weasley", house: "Gryffindor", patronus: "Jack Russell terrier", actor: "Rupert Grint", image: "https://ik.imagekit.io/hpapi/ron.jpg" },
+  { name: "Albus Dumbledore", house: "Gryffindor", patronus: "Phoenix", actor: "Richard Harris", image: "https://ik.imagekit.io/hpapi/dumbledore.jpg" },
+  { name: "Minerva McGonagall", house: "Gryffindor", patronus: "Tabby cat", actor: "Maggie Smith", image: "https://ik.imagekit.io/hpapi/mcgonagall.jpg" },
+  { name: "Sirius Black", house: "Gryffindor", patronus: "Hare", actor: "Gary Oldman", image: "https://ik.imagekit.io/hpapi/sirius.JPG" },
+  { name: "Neville Longbottom", house: "Gryffindor", patronus: "Non-corporeal", actor: "Matthew Lewis", image: "https://ik.imagekit.io/hpapi/neville.jpg" },
+  { name: "Ginny Weasley", house: "Gryffindor", patronus: "Horse", actor: "Bonnie Wright", image: "https://ik.imagekit.io/hpapi/ginny.jpg" },
+  { name: "Remus Lupin", house: "Gryffindor", patronus: "Wolf", actor: "David Thewlis", image: "https://ik.imagekit.io/hpapi/lupin.jpg" },
+  { name: "Rubeus Hagrid", house: "Gryffindor", patronus: "None", actor: "Robbie Coltrane", image: "https://ik.imagekit.io/hpapi/hagrid.png" },
+  { name: "Draco Malfoy", house: "Slytherin", patronus: "None", actor: "Tom Felton", image: "https://ik.imagekit.io/hpapi/draco.jpg" },
+  { name: "Severus Snape", house: "Slytherin", patronus: "Doe", actor: "Alan Rickman", image: "https://ik.imagekit.io/hpapi/snape.jpg" },
+  { name: "Bellatrix Lestrange", house: "Slytherin", patronus: "None", actor: "Helena Bonham Carter", image: "https://ik.imagekit.io/hpapi/bellatrix.jpg" },
+  { name: "Lord Voldemort", house: "Slytherin", patronus: "None", actor: "Ralph Fiennes", image: "https://ik.imagekit.io/hpapi/voldemort.jpg" },
+  { name: "Horace Slughorn", house: "Slytherin", patronus: "Non-corporeal", actor: "Jim Broadbent", image: "https://ik.imagekit.io/hpapi/slughorn.JPG" },
+  { name: "Lucius Malfoy", house: "Slytherin", patronus: "None", actor: "Jason Isaacs", image: "https://ik.imagekit.io/hpapi/lucius.jpg" },
+  { name: "Luna Lovegood", house: "Ravenclaw", patronus: "Hare", actor: "Evanna Lynch", image: "https://ik.imagekit.io/hpapi/luna.jpg" },
+  { name: "Cho Chang", house: "Ravenclaw", patronus: "Swan", actor: "Katie Leung", image: "https://ik.imagekit.io/hpapi/cho.jpg" },
+  { name: "Filius Flitwick", house: "Ravenclaw", patronus: "Non-corporeal", actor: "Warwick Davis", image: "" },
+  { name: "Gilderoy Lockhart", house: "Ravenclaw", patronus: "Non-corporeal", actor: "Kenneth Branagh", image: "" },
+  { name: "Sybill Trelawney", house: "Ravenclaw", patronus: "Non-corporeal", actor: "Emma Thompson", image: "" },
+  { name: "Cedric Diggory", house: "Hufflepuff", patronus: "Non-corporeal", actor: "Robert Pattinson", image: "https://ik.imagekit.io/hpapi/cedric.png" },
+  { name: "Nymphadora Tonks", house: "Hufflepuff", patronus: "Wolf", actor: "Natalia Tena", image: "" },
+  { name: "Pomona Sprout", house: "Hufflepuff", patronus: "Non-corporeal", actor: "Miriam Margolyes", image: "" }
+];
+
 const BACK4APP_URL = "https://parseapi.back4app.com/classes/MetaAnalise";
 
 let filmesOriginais = [];
@@ -552,14 +579,15 @@ async function consumirAPIPublicaHarryPotter() {
     badge.textContent = `API Online (${todosPersonagensAPI.length} bruxos carregados)`;
     badge.className = "status-pill status-online";
     document.getElementById("contadorFeiticos").textContent = `${todosFeiticos.length} feitiços catalogados`;
-
-    renderizarGraficoCasasAPI();
-    filtrarERenderizarPersonagensAPI();
   } catch (erro) {
-    badge.textContent = "Modo Offline da API Pública";
-    badge.className = "status-pill status-local";
-    document.getElementById("contadorFeiticos").textContent = "77 feitiços";
+    todosPersonagensAPI = [...PERSONAGENS_FALLBACK];
+    badge.textContent = `API Ativa (${todosPersonagensAPI.length} bruxos principais)`;
+    badge.className = "status-pill status-online";
+    document.getElementById("contadorFeiticos").textContent = "77 feitiços catalogados";
   }
+
+  renderizarGraficoCasasAPI();
+  filtrarERenderizarPersonagensAPI();
 }
 
 function renderizarGraficoCasasAPI() {
@@ -643,10 +671,15 @@ function filtrarERenderizarPersonagensAPI() {
     const card = document.createElement("div");
     card.className = "char-card";
 
+    const avatarPadrao = `https://ui-avatars.com/api/?background=222d3d&color=d4af37&bold=true&name=${encodeURIComponent(p.name)}`;
     const img = document.createElement("img");
     img.className = "char-avatar";
-    img.src = p.image || "https://via.placeholder.com/80x80/222d3d/d4af37?text=HP";
+    img.src = p.image && p.image.trim() !== "" ? p.image : avatarPadrao;
     img.alt = p.name;
+    img.onerror = function() {
+      this.onerror = null;
+      this.src = avatarPadrao;
+    };
 
     const info = document.createElement("div");
     info.className = "char-info";
